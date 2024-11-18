@@ -1,17 +1,16 @@
 import requests
 import time
-import subprocess
 
-REMOTE_PORT = 8000  # Should match the port used in remote_server.py
+REMOTE_PORT = 1337  # Should match the port used in remote_server.py
 REMOTE_HOSTS_FILE = 'remote_hosts.txt'  # File containing the list of remote hosts
+LOCAL_CONFIG_FILE = 'config.txt'  # The local configuration file to read
 
 def get_local_config():
     try:
-        # Use ip6tables-save to get the local configuration
-        result = subprocess.run(['ip6tables-save'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True, text=True)
-        return result.stdout.encode('utf-8')
-    except subprocess.CalledProcessError as e:
-        print(f'Failed to retrieve local ip6tables configuration: {e.stderr}')
+        with open(LOCAL_CONFIG_FILE, 'rb') as f:
+            return f.read()
+    except Exception as e:
+        print(f'Failed to read local configuration file: {e}')
         return None
 
 def get_remote_config(remote_host):
@@ -40,7 +39,7 @@ def update_remote_config(remote_host, config_data):
 
 def main():
     while True:
-        # Get the local ip6tables configuration
+        # Read the local configuration file
         local_config = get_local_config()
         if local_config is None:
             print('Skipping this iteration due to local configuration retrieval failure.')
